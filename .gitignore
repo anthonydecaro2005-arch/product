@@ -1,0 +1,19 @@
+# Ignore environment variables
+.env
+*.env
+
+# Python cache / logs
+__pycache__/
+*.pyc
+*.log
+
+# Node modules
+node_modules/
+
+# VS Code
+.vscode/
+
+# Docker
+*.pid
+*.sock
+
