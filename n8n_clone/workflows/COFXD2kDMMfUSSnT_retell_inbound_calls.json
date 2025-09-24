@@ -1,32 +1,90 @@
 {
   "createdAt": "2025-09-22T16:23:27.761Z",
-  "updatedAt": "2025-09-23T21:55:24.224Z",
+  "updatedAt": "2025-09-24T00:27:15.589Z",
   "id": "COFXD2kDMMfUSSnT",
   "name": "retell_inbound_calls",
-  "active": false,
+  "active": true,
   "isArchived": false,
   "nodes": [
     {
-      "parameters": {},
-      "type": "n8n-nodes-base.manualTrigger",
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "calendly-booking",
+        "options": {}
+      },
+      "name": "Calendly Webhook",
+      "type": "n8n-nodes-base.webhook",
       "typeVersion": 1,
       "position": [
-        0,
-        0
+        304,
+        304
       ],
-      "id": "908c558e-f6e0-4f10-bd85-67701eb3b018",
-      "name": "When clicking \u2018Execute workflow\u2019"
+      "id": "85335c8c-a5c5-4799-8c19-2eb1e18f2615",
+      "webhookId": "6b6c671a-10ab-4195-80a5-cc8c6ac26690"
+    },
+    {
+      "parameters": {
+        "functionCode": "const body = $json;\n\nfunction get(path, def = \"\") {\n  try {\n    return path.split('.').reduce((o, k) => (o && o[k] !== undefined ? o[k] : undefined), body) ?? def;\n  } catch { return def; }\n}\n\nconst invitee = get('payload.invitee.name') || get('invitee.name');\nconst email   = get('payload.invitee.email') || get('invitee.email');\nconst eventType = get('payload.event_type.name') || get('event_type.name') || get('payload.event_type') || get('event_type');\nconst start   = get('payload.event.start_time') || get('event.start_time') || get('start_time');\nconst end     = get('payload.event.end_time') || get('event.end_time') || get('end_time');\n\nconst raw = JSON.stringify(body, null, 2);\nconst max = 1900; // Discord limit ~2000 chars\nconst snippet = raw.length > max ? raw.slice(0, max) + '\u2026' : raw;\n\nconst msg = `\ud83d\udcc5 New Calendly booking\\nEvent: ${eventType}\\nInvitee: ${invitee} (${email})\\nStart: ${start}\\nEnd: ${end}\\n\\nRaw:\\n\\u0060\\u0060\\u0060json\\n${snippet}\\n\\u0060\\u0060\\u0060`;\n\nreturn [{ json: { content: msg } }];"
+      },
+      "name": "Build Discord Message",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        528,
+        304
+      ],
+      "id": "b8ab58ca-db69-4b34-9e00-4e0b73571550"
+    },
+    {
+      "parameters": {
+        "requestMethod": "POST",
+        "url": "https://discord.com/api/webhooks/1420194407541374997/ZQ_cATZ-wxdvV9sCDDcKJf7Y4EZgweMni5cPeiGeXL1tpezY17BxbJ5DIXDcc3GwWXUu",
+        "jsonParameters": true,
+        "options": {},
+        "bodyParametersJson": "={\n  \"content\": \"\ud83d\udcc5 New booking: {{ $json.payload.invitee.name }} ({{ $json.payload.invitee.email }}) at {{ $json.payload.event.start_time }}\"\n}"
+      },
+      "name": "Send to Discord",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        768,
+        304
+      ],
+      "id": "6af5ec31-bebf-4691-add7-5a58285d2595"
     }
   ],
-  "connections": {},
+  "connections": {
+    "Calendly Webhook": {
+      "main": [
+        [
+          {
+            "node": "Build Discord Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Discord Message": {
+      "main": [
+        [
+          {
+            "node": "Send to Discord",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
   "settings": {
     "executionOrder": "v1"
   },
   "staticData": null,
   "meta": null,
   "pinData": {},
-  "versionId": "0168784f-ede3-4500-bac0-0efaab9c239f",
-  "triggerCount": 0,
+  "versionId": "6eae8387-f1cb-4e51-9d98-e48c7d6dd1b1",
+  "triggerCount": 1,
   "shared": [
     {
       "createdAt": "2025-09-22T16:23:27.761Z",
@@ -50,7 +108,7 @@
             "projectId": "QnZS644IJrqTdTYd",
             "user": {
               "createdAt": "2025-09-20T23:48:51.147Z",
-              "updatedAt": "2025-09-23T15:23:58.711Z",
+              "updatedAt": "2025-09-24T00:23:33.263Z",
               "id": "77dce4c9-f982-4209-a648-9d170c21af50",
               "email": "anthony@thecallhero.com",
               "firstName": "Anthony",
@@ -65,7 +123,9 @@
                 "reportedSource": "youtube"
               },
               "settings": {
-                "userActivated": false
+                "userActivated": true,
+                "firstSuccessfulWorkflowId": "COFXD2kDMMfUSSnT",
+                "userActivatedAt": 1758673412990
               },
               "disabled": false,
               "mfaEnabled": false,
