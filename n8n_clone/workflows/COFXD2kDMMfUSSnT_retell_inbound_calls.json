@@ -1,6 +1,6 @@
 {
   "createdAt": "2025-09-22T16:23:27.761Z",
-  "updatedAt": "2025-09-24T00:47:29.683Z",
+  "updatedAt": "2025-10-04T15:20:50.381Z",
   "id": "COFXD2kDMMfUSSnT",
   "name": "retell_inbound_calls",
   "active": true,
@@ -8,74 +8,266 @@
   "nodes": [
     {
       "parameters": {
-        "httpMethod": "POST",
-        "path": "calendly-booking",
+        "method": "POST",
+        "url": "https://api.retellai.com/v2/register-phone-call",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $json.retell_api }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"agent_id\": \"{{ $json.agent_id }}\",\n  \"audio_websocket_protocol\": \"twilio\",\n  \"audio_encoding\": \"mulaw\",\n  \"sample_rate\": 8000,\n  \"from_number\": \"{{ $('Twilio Incoming1').item.json.body.From }}\",\n  \"to_number\": \"{{ $('Twilio Incoming1').item.json.body.To }}\",\n  \"metadata\": {\n    \"twilio_call_sid\": \"{{ $('Twilio Incoming1').item.json.body.CallSid }}\"\n  }\n}",
         "options": {}
       },
-      "name": "Calendly Webhook",
+      "id": "96e21dd1-44cc-42ae-bcc4-c6204027caef",
+      "name": "Register Call with Retell",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        1184,
+        784
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "tCjg50tmT5af1WHk",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "twilio_inbound",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "2d653bf2-8a9f-40a0-b384-2e168740d670",
+      "name": "Twilio Incoming",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 1,
       "position": [
-        304,
-        304
+        576,
+        1392
       ],
-      "id": "85335c8c-a5c5-4799-8c19-2eb1e18f2615",
-      "webhookId": "6b6c671a-10ab-4195-80a5-cc8c6ac26690"
+      "webhookId": "twilio_inbound"
     },
     {
       "parameters": {
-        "functionCode": "const body = $json;\n\nfunction get(path, def = \"\") {\n  try {\n    return path.split('.').reduce((o, k) => (o && o[k] !== undefined ? o[k] : undefined), body) ?? def;\n  } catch { return def; }\n}\n\n// Calendly fields live under body.payload.*\nconst invitee = get('body.payload.name');\nconst email   = get('body.payload.email');\nconst eventType = get('body.event');\nconst start   = get('body.payload.scheduled_event.start_time');\nconst end     = get('body.payload.scheduled_event.end_time');\n\nconst raw = JSON.stringify(body, null, 2);\nconst max = 1900; // Discord message limit ~2000 chars\nconst snippet = raw.length > max ? raw.slice(0, max) + '\u2026' : raw;\n\nconst msg = `\ud83d\udcc5 New Calendly booking\nEvent: ${eventType}\nInvitee: ${invitee} (${email})\nStart: ${start}\nEnd: ${end}\n\nRaw:\n\\`\\`\\`json\n${snippet}\n\\`\\`\\``;\n\nreturn [{ json: { content: msg } }];\n"
-      },
-      "name": "Build Discord Message",
-      "type": "n8n-nodes-base.function",
-      "typeVersion": 1,
-      "position": [
-        528,
-        304
-      ],
-      "id": "b8ab58ca-db69-4b34-9e00-4e0b73571550"
-    },
-    {
-      "parameters": {
-        "requestMethod": "POST",
-        "url": "https://discord.com/api/webhooks/1420194407541374997/ZQ_cATZ-wxdvV9sCDDcKJf7Y4EZgweMni5cPeiGeXL1tpezY17BxbJ5DIXDcc3GwWXUu",
-        "options": {},
-        "bodyParametersUi": {
-          "parameter": [
-            {
-              "name": "content",
-              "value": "=\ud83d\udcc5 New Calendly booking\nEvent: {{$json[\"body\"][\"event\"]}}\nInvitee: {{$json[\"body\"][\"payload\"][\"name\"]}} ({{$json[\"body\"][\"payload\"][\"email\"]}})\nStart: {{$json[\"body\"][\"payload\"][\"scheduled_event\"][\"start_time\"]}}\nEnd: {{$json[\"body\"][\"payload\"][\"scheduled_event\"][\"end_time\"]}}"
+        "documentId": {
+          "__rl": true,
+          "value": "1DE40PUBFOaRbQ5j7QvbeUL5uaWZRgF6f0mMmqjMrXBQ",
+          "mode": "list",
+          "cachedResultName": "callhero_client_controls",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1DE40PUBFOaRbQ5j7QvbeUL5uaWZRgF6f0mMmqjMrXBQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "controls",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1DE40PUBFOaRbQ5j7QvbeUL5uaWZRgF6f0mMmqjMrXBQ/edit#gid=0"
+        },
+        "options": {
+          "dataLocationOnSheet": {
+            "values": {
+              "rangeDefinition": "detectAutomatically",
+              "readRowsUntil": "firstEmptyRow"
             }
-          ]
+          }
         }
       },
-      "name": "Send to Discord",
-      "type": "n8n-nodes-base.httpRequest",
+      "id": "425bb195-272d-4d3a-9b53-74f500a37d36",
+      "name": "Get All Rows",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [
+        800,
+        1392
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "ay6BXf7VXjQLw1Bj",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "filter_by_number",
+              "leftValue": "={{ $json.twilio_num }}",
+              "rightValue": "={{ $('Twilio Incoming').item.json.body.To }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "27a1f51c-4991-425b-b1ce-8751309453b2",
+      "name": "Filter by Twilio Number",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2,
+      "position": [
+        1024,
+        1392
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "=<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<Response>\n  <Dial>{{ $json.client_num }}</Dial>\n</Response>",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "text/xml"
+              }
+            ]
+          }
+        }
+      },
+      "id": "fb50e53a-59eb-49a3-8adc-01964ed98654",
+      "name": "Forward to Client Number",
+      "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1,
       "position": [
-        768,
-        304
-      ],
-      "id": "6af5ec31-bebf-4691-add7-5a58285d2595"
+        1456,
+        1264
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "check_switch",
+              "leftValue": "={{ $json.switch }}",
+              "rightValue": "Off",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "e88d8156-b9f3-4daa-86cc-c8743bc6c5d4",
+      "name": "Check if Switch is Off",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1248,
+        1392
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<Response>\n  <Say>This number is currently unavailable.</Say>\n  <Hangup/>\n</Response>",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "text/xml"
+              }
+            ]
+          }
+        }
+      },
+      "id": "6e3212bf-71fa-4f40-95c9-ee1adca08612",
+      "name": "Else Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        1456,
+        1456
+      ]
     }
   ],
   "connections": {
-    "Calendly Webhook": {
+    "Register Call with Retell": {
+      "main": [
+        []
+      ]
+    },
+    "Twilio Incoming": {
       "main": [
         [
           {
-            "node": "Build Discord Message",
+            "node": "Get All Rows",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Build Discord Message": {
+    "Get All Rows": {
       "main": [
         [
           {
-            "node": "Send to Discord",
+            "node": "Filter by Twilio Number",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter by Twilio Number": {
+      "main": [
+        [
+          {
+            "node": "Check if Switch is Off",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check if Switch is Off": {
+      "main": [
+        [
+          {
+            "node": "Forward to Client Number",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Else Response",
             "type": "main",
             "index": 0
           }
@@ -87,9 +279,11 @@
     "executionOrder": "v1"
   },
   "staticData": null,
-  "meta": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
   "pinData": {},
-  "versionId": "0b750175-f9e7-463f-8b6a-6a65728ff5ba",
+  "versionId": "5d8e1ea7-178d-4d3b-a0a5-8537c6f5a148",
   "triggerCount": 1,
   "shared": [
     {
@@ -114,7 +308,7 @@
             "projectId": "QnZS644IJrqTdTYd",
             "user": {
               "createdAt": "2025-09-20T23:48:51.147Z",
-              "updatedAt": "2025-09-24T00:23:33.263Z",
+              "updatedAt": "2025-10-04T13:53:28.872Z",
               "id": "77dce4c9-f982-4209-a648-9d170c21af50",
               "email": "anthony@thecallhero.com",
               "firstName": "Anthony",
@@ -131,11 +325,16 @@
               "settings": {
                 "userActivated": true,
                 "firstSuccessfulWorkflowId": "COFXD2kDMMfUSSnT",
-                "userActivatedAt": 1758673412990
+                "userActivatedAt": 1758673412990,
+                "npsSurvey": {
+                  "waitingForResponse": true,
+                  "ignoredCount": 1,
+                  "lastShownAt": 1759586006120
+                }
               },
               "disabled": false,
               "mfaEnabled": false,
-              "lastActiveAt": "2025-09-23",
+              "lastActiveAt": "2025-10-04",
               "isPending": false
             }
           }
